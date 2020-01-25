@@ -1,8 +1,12 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 
 const app = express();
 const http = require('http').createServer(app);
 const gameController = require('./routes/gameController');
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,15 +16,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use('/game_controller', gameController);
-
-app.use(express.json());
-
-// app.get('/', (req, res) => {
-//   const id = uuid();
-//   const newGame = new Game(id, io);
-//   activeGames[id] = newGame;
-//   res.status(200).json({ msg: 'Game started' });
-// });
 
 const port = process.env.PORT || 5000;
 
