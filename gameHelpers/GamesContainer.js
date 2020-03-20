@@ -1,6 +1,4 @@
 const uuid = require('uuid');
-const http = require('../app');
-const io = require('socket.io')(http);
 const { signPlayerWithJWT } = require('../authHelpers/authActions');
 
 const Game = require('../gameHelpers/Game');
@@ -8,6 +6,7 @@ const Game = require('../gameHelpers/Game');
 class GamesContainer {
   constructor() {
     this.games = {};
+    this.io = require('../socket/socket').get();
   }
 
   addGame(game) {
@@ -16,7 +15,8 @@ class GamesContainer {
 
   createNewGame(response) {
     const gameID = uuid();
-    const game = new Game(gameID, io);
+    const socket = this.io.of(`/${gameID}`);
+    const game = new Game(gameID, socket);
 
     this.addGame(game);
     const playerType = game.setPlayer();
@@ -27,7 +27,7 @@ class GamesContainer {
       if (err) throw err;
       response.status(200).json({
         playerID: token,
-        game: game.getGame(),
+        gameID,
       });
     });
   }

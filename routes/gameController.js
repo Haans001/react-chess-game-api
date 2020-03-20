@@ -1,9 +1,4 @@
 const router = require('express').Router();
-const uuid = require('uuid');
-const http = require('../app');
-const io = require('socket.io')(http);
-const jwt = require('jsonwebtoken');
-const { jwtSecret } = require('../config/config');
 
 /* middleware */
 const verifyPlayer = require('../middleware/verifyPlayer');
@@ -20,7 +15,7 @@ router.get('/join_game/:gameID', (req, res) => {
   const { gameID } = req.params;
   const game = games.getGame(gameID);
   if (game) {
-    const playerType = game.setPlayer();
+    const playerType = game.join();
     signPlayerWithJWT(playerType, gameID, (err, token) => {
       if (err) throw err;
       res.status(200).json({

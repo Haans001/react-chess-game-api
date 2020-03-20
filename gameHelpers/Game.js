@@ -2,11 +2,11 @@ const Cell = require('./Cell');
 const Player = require('../authHelpers/Player');
 
 class Game {
-  constructor(id, io) {
+  constructor(id, socket) {
     this.rows = 8;
     this.cols = 8;
     this.id = id;
-    this.socket = io.of(`/${id}`);
+    this.socket = socket;
     this.board = this.initializeBoard();
     this.players = {
       white: null,
@@ -14,6 +14,7 @@ class Game {
       viewers: [],
     };
     this.isFull = this.isFull.bind(this);
+    this.setUpSocket();
   }
 
   initializeBoard() {
@@ -28,6 +29,33 @@ class Game {
         counter += 1;
       }
     }
+
+    /* white */
+    cells[0][0].setPiece('white', 'rook');
+    cells[0][1].setPiece('white', 'knight');
+    cells[0][2].setPiece('white', 'bishop');
+    cells[0][3].setPiece('white', 'king');
+    cells[0][4].setPiece('white', 'queen');
+    cells[0][5].setPiece('white', 'bishop');
+    cells[0][6].setPiece('white', 'knight');
+    cells[0][7].setPiece('white', 'rook');
+    for (let i = 0; i < this.cols; i += 1) {
+      cells[1][i].setPiece('white', 'pawn');
+    }
+
+    /* black */
+    cells[7][0].setPiece('black', 'rook');
+    cells[7][1].setPiece('black', 'knight');
+    cells[7][2].setPiece('black', 'bishop');
+    cells[7][3].setPiece('black', 'king');
+    cells[7][4].setPiece('black', 'queen');
+    cells[7][5].setPiece('black', 'bishop');
+    cells[7][6].setPiece('black', 'knight');
+    cells[7][7].setPiece('black', 'rook');
+    for (let i = 0; i < this.cols; i += 1) {
+      cells[6][i].setPiece('black', 'pawn');
+    }
+
     return cells;
   }
 
@@ -56,8 +84,22 @@ class Game {
     };
   }
 
+  join() {
+    const playerType = this.setPlayer();
+    return playerType;
+  }
+
   isFull() {
     return !(this.players.black && this.players.white) ? false : true;
+  }
+
+  setUpSocket() {
+    this.socket.on('connection', socket => {
+      console.log(`Socket Connected with ${this.id}`);
+      socket.on('join_game', () =>
+        this.socket.emit('get_game', { game: this.getGame() }),
+      );
+    });
   }
 }
 
